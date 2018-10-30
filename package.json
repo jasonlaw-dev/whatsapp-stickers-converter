@@ -2,8 +2,10 @@
   "name": "whatsapp-stickers-convert",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://lckj210.github.io/whatsapp-stickers-convert/",
   "dependencies": {
     "downloadjs": "^1.4.7",
+    "gh-pages": "^2.0.1",
     "jimp": "^0.5.6",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
@@ -13,7 +15,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
