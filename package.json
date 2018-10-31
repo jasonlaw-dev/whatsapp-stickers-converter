@@ -4,10 +4,12 @@
   "private": true,
   "homepage": "https://lckj210.github.io/whatsapp-stickers-convert/",
   "dependencies": {
+    "bootstrap": "^4.1.3",
     "downloadjs": "^1.4.7",
     "gh-pages": "^2.0.1",
     "jimp": "^0.5.6",
     "react": "^16.6.0",
+    "react-bootstrap": "^1.0.0-beta.1",
     "react-dom": "^16.6.0",
     "react-scripts": "2.1.0"
   },
