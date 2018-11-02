@@ -18,7 +18,7 @@ class App extends React.Component {
   isMobile = () => {
     const os = new UAParser(window.navigator).getOS();
     return os && os.name && (os.name.startsWith('Android') || os.name.startsWith('iOS'));
-  }
+  };
 
   render() {
     return (

@@ -108,6 +108,7 @@ class ImageUpload extends React.Component {
         }
       });
       this.setState({ isSubmitting: false });
+      window.scrollTo(0, document.body.scrollHeight);
     })().catch((error) => {
       console.error(error);
       this.setState({
@@ -281,9 +282,9 @@ class ImageUpload extends React.Component {
         >
           {this.state.errorMsg || 'Images converted!'}
         </p>
-        {this.state.convertedPacks.map((pack, index) => (
+        {!this.props.isMobile || this.state.convertedPacks.map((pack, index) => (
           <div style={{ marginTop: '3px', marginBottom: '3px' }}>
-            <Button onClick={() => this.handleDownload(pack)}>
+            <Button variant="outline-primary" onClick={() => this.handleDownload(pack)}>
               JSON File {index + 1}
             </Button>
           </div>
