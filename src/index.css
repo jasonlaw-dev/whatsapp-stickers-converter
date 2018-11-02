@@ -16,3 +16,7 @@ code {
 .progress-bar {
   transition: none !important;
 }
+
+.custom-file-label {
+  overflow: hidden;
+}
