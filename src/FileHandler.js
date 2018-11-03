@@ -1,7 +1,5 @@
 /* global libwebp */
 
-// emcc -O3 -s WASM=1 -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' -s ALLOW_MEMORY_GROWTH=1 -s "BINARYEN_TRAP_MODE='clamp'" -I libwebp webp.c libwebp/src/{dec,dsp,demux,enc,mux,utils}/*.c
-
 const jimp = require('jimp');
 const JSZip = require('jszip');
 // const Module = require('./vendor/a.out');
