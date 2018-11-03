@@ -95,7 +95,7 @@ class WhatsAppStickersConverter {
     const result = new Uint8Array(resultView);
     this.api.free_result(resultPointer);
     this.api.destroy_buffer(p);
-    return btoa(result.reduce((data, byte) => data + String.fromCharCode(byte), ''));
+    return `data:image/webp;base64,${btoa(result.reduce((data, byte) => data + String.fromCharCode(byte), ''))}`;
   }
 
   convertURLToWebpURL(url, quality) {
