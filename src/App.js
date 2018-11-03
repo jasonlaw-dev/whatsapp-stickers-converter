@@ -10,15 +10,21 @@ import UAParser from 'ua-parser-js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class App extends React.Component {
+
+  isMobile = false;
+
+  isDownloadMultipleFilesSupported = false;
+
   constructor(props) {
     super(props);
-    console.log();
+    const result = new UAParser(window.navigator);
+    const os = result.getOS();
+    const browser = result.getBrowser();
+    const osName = os && os.name ? os.name : '';
+    const browserName = browser && browser.name ? browser.name : '';
+    this.isMobile = osName.startsWith('Android') || osName.startsWith('iOS');
+    this.isDownloadMultipleFilesSupported = browserName.startsWith('Chrom');
   }
-
-  isMobile = () => {
-    const os = new UAParser(window.navigator).getOS();
-    return os && os.name && (os.name.startsWith('Android') || os.name.startsWith('iOS'));
-  };
 
   render() {
     return (
@@ -34,7 +40,7 @@ class App extends React.Component {
 
         <Row className="justify-content-md-center">
           <Col lg={10}>
-            <ImageUpload isMobile={this.isMobile()} />
+            <ImageUpload isMobile={this.isMobile} isDownloadMultipleFilesSupported={this.isDownloadMultipleFilesSupported} />
           </Col>
         </Row>
       </Container>

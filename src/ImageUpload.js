@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import React from 'react';
 import Form from 'react-bootstrap/lib/Form';
 import Row from 'react-bootstrap/lib/Row';
@@ -9,11 +8,13 @@ import ToggleButtonGroup from 'react-bootstrap/lib/ToggleButtonGroup';
 import ToggleButton from 'react-bootstrap/lib/ToggleButton';
 import ButtonToolbar from 'react-bootstrap/lib/ButtonToolbar';
 import Alert from 'react-bootstrap/lib/Alert';
-import { loadFile, addNumberToURL, unzip, api } from './FileHandler';
-
-const download = require('downloadjs');
+import saveAs from 'file-saver';
+import PropTypes from 'prop-types';
+import WhatsAppStickersConverter from './WhatsAppStickersConverter';
 
 class ImageUpload extends React.Component {
+  converter = null;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -30,13 +31,14 @@ class ImageUpload extends React.Component {
       uploadType: 'image',
       isApiLoaded: true,
     };
-    setTimeout(() => {
-      if (!api.isLoaded) {
-        this.setState({
-          isApiLoaded: false,
-        });
-      }
-    }, 1000);
+
+    this.converter = new WhatsAppStickersConverter();
+    this.converter.init().then().catch((e) => {
+      console.error(e);
+      this.setState({
+        isApiLoaded: false,
+      });
+    });
   }
 
   handleSubmit = (e) => {
@@ -53,45 +55,35 @@ class ImageUpload extends React.Component {
       identifier, name, publisher, zipFile, uploadType,
     } = this.state;
 
-    let {
-      trayFile, stickersFiles,
-    } = this.state;
-
     (async () => {
+      let { trayFile, stickersFiles } = this.state;
+      if (uploadType === 'image') {
+        stickersFiles = [];
+        for (let i = 0; i < this.state.stickersFiles.length; i++) {
+          stickersFiles.push(this.state.stickersFiles[i]);
+        }
+      }
       if (uploadType === 'zip') {
-        const zipContent = await unzip(zipFile);
+        const zipContent = await this.converter.unzip(zipFile);
         // eslint-disable-next-line prefer-destructuring
         trayFile = zipContent.trayFile;
         // eslint-disable-next-line prefer-destructuring
         stickersFiles = zipContent.stickersFiles;
       }
 
+      const emitter = this.converter.convertImagesToPacks(trayFile, stickersFiles);
+      let stickersLoaded = 0;
+      emitter.on('stickerLoad', () => {
+        stickersLoaded += 1;
+        this.setState({ progress: stickersLoaded / stickersFiles.length * 100 });
+      });
 
-      const tray = await loadFile(trayFile, 'tray');
-      const stickersInPack = [];
+      const { trays, stickersInPack } = await new Promise((resolve, reject) => {
+        emitter.on('error', reject);
+        emitter.on('load', resolve);
+      });
 
-      const numOfPacks = Math.ceil(stickersFiles.length / 30);
-      const trays = [];
-
-      for (let pack = 0; pack < numOfPacks; pack++) {
-        stickersInPack.push([]);
-        trays.push(numOfPacks === 1 ? tray : await addNumberToURL(tray, `${pack + 1}`));
-      }
-
-      for (let i = 0; i < stickersFiles.length; i++) {
-        const sticker = await loadFile(stickersFiles[i], 'stickers');
-        this.setState({ progress: (i + 1) / stickersFiles.length * 100 });
-        stickersInPack[Math.floor(i / 30)].push(sticker);
-      }
-
-      if (numOfPacks > 1 && stickersInPack[numOfPacks - 1].length < 3) {
-        stickersInPack[numOfPacks - 1] = [
-          ...stickersInPack[numOfPacks - 2].splice(-(3 - stickersInPack[numOfPacks - 1].length)),
-          ...stickersInPack[numOfPacks - 1],
-        ];
-      }
-
-      stickersInPack.map((pack, index) => ({
+      const convertedPacks = stickersInPack.map((pack, index) => ({
         identifier: identifier + (index === 0 ? '' : `_${index + 1}`),
         name: name + (index === 0 ? '' : ` (${index + 1})`),
         publisher,
@@ -99,15 +91,16 @@ class ImageUpload extends React.Component {
         stickers: pack.map(sticker => ({
           image_data: sticker.replace('data:image/webp;base64,', ''),
         })),
-      })).forEach((pack) => {
-        this.setState(prevState => ({
-          convertedPacks: [...prevState.convertedPacks, pack],
-        }));
+      }));
+
+      convertedPacks.forEach((pack) => {
         if (!this.props.isMobile) {
-          this.handleDownload(pack);
+          if (convertedPacks.length === 1 || this.props.isDownloadMultipleFilesSupported) {
+            this.handleDownload(pack);
+          }
         }
       });
-      this.setState({ isSubmitting: false });
+      this.setState({ convertedPacks, isSubmitting: false });
       window.scrollTo(0, document.body.scrollHeight);
     })().catch((error) => {
       console.error(error);
@@ -158,14 +151,14 @@ class ImageUpload extends React.Component {
       const url = `twesticker://json?data=${encodeURIComponent(jsonString)}`;
       window.open(url);
     } else {
-      const url = `data:application/json;base64,${Buffer.from(jsonString).toString('base64')}`;
-      download(url, `${pack.identifier}.json`, 'application/json');
+      saveAs(new Blob([jsonString], { type: 'application/json' }), `${pack.identifier}.json`);
     }
-  }
+  };
 
-  isFormValid = () => this.isIdentifierValid() && this.state.identifier && this.state.name && this.state.publisher &&
-    ((this.state.uploadType === 'image' && this.state.trayFile != null && this.state.stickersFiles && this.state.stickersFiles.length >= 3) ||
-      (this.state.uploadType === 'zip' && this.state.zipFile != null));
+  isFormValid = () => this.isIdentifierValid() && this.state.identifier && this.state.name && this.state.publisher
+    && ((this.state.uploadType === 'image' && this.state.trayFile != null && this.state.stickersFiles && this.state.stickersFiles.length >= 3)
+      || (this.state.uploadType === 'zip' && this.state.zipFile != null)
+    );
 
   isSubmittable = () => this.isFormValid() && !this.state.isSubmitting;
 
@@ -282,10 +275,11 @@ class ImageUpload extends React.Component {
         >
           {this.state.errorMsg || 'Images converted!'}
         </p>
-        {!this.props.isMobile || this.state.convertedPacks.map((pack, index) => (
+        {(this.props.isMobile || (this.state.convertedPacks.length > 1 && !this.props.isDownloadMultipleFilesSupported)) &&
+        this.state.convertedPacks.map((pack, index) => (
           <div style={{ marginTop: '3px', marginBottom: '3px' }}>
             <Button variant="outline-primary" onClick={() => this.handleDownload(pack)}>
-              JSON File {index + 1}
+              {`JSON File ${index + 1}`}
             </Button>
           </div>
         ))}
@@ -294,5 +288,9 @@ class ImageUpload extends React.Component {
   }
 }
 
+ImageUpload.propTypes = {
+  isMobile: PropTypes.bool,
+  isDownloadMultipleFilesSupported: PropTypes.bool,
+};
 
 export default ImageUpload;
