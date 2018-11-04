@@ -87,11 +87,13 @@ class ImageUpload extends React.Component {
         identifier: identifier + (index === 0 ? '' : `_${index + 1}`),
         name: name + (index === 0 ? '' : ` (${index + 1})`),
         publisher,
-        tray_image: trays[index].replace('data:image/png;base64,', ''),
+        tray_image: trays[index].replace(/^data:image\/[a-z]+;base64,/, ''),
         stickers: pack.map(sticker => ({
-          image_data: sticker.replace('data:image/webp;base64,', ''),
+          image_data: sticker.replace(/^data:image\/[a-z]+;base64,/, ''),
         })),
       }));
+
+      console.log(convertedPacks);
 
       convertedPacks.forEach((pack) => {
         if (!this.props.isMobile) {
@@ -122,8 +124,8 @@ class ImageUpload extends React.Component {
 
       // for debugging photo
       // setTimeout(async() => {
-      //   const tray = await loadFile(this.state.trayFile, 'tray');
-      //   const tray2 = await addNumberToURL(tray, '8');
+      //   const tray = await processImageFile(this.state.trayFile, 'tray');
+      //   const tray2 = await addNumberToTray(tray, '8');
       //   this.setState({
       //     imagePreviewUrl: tray2,
       //   })
