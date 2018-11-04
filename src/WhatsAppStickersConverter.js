@@ -174,10 +174,7 @@ class WhatsAppStickersConverter {
 
   resizeAndConvert(input, px, toWebp) {
     return Jimp.read(input).then((_image) => {
-      let image = _image;
-      if (image.getWidth() !== px && image.getHeight() !== px) {
-        image = image.contain(px, px);
-      }
+      const image = _image.contain(px, px);
 
       const b64Promise = image.getBase64Async(Jimp.MIME_PNG);
 

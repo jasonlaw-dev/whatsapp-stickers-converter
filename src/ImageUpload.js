@@ -1,3 +1,5 @@
+/* global gtag */
+
 import React from 'react';
 import Form from 'react-bootstrap/lib/Form';
 import Row from 'react-bootstrap/lib/Row';
@@ -104,6 +106,11 @@ class ImageUpload extends React.Component {
       });
       this.setState({ convertedPacks, isSubmitting: false });
       window.scrollTo(0, document.body.scrollHeight);
+
+      gtag('event', 'stickers-convert', {
+        packs: convertedPacks.length,
+        stickers: stickersFiles.length,
+      });
     })().catch((error) => {
       console.error(error);
       this.setState({
