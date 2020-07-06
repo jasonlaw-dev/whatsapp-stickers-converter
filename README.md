@@ -1,61 +1,26 @@
 # WhatsApp Stickers Converter
+https://jasonlaw-dev.github.io/whatsapp-stickers-converter/
 
-### How to build libwebpjs
-Clone libwebp project
-```
-git clone https://github.com/webmproject/libwebp.git libwebpjs/libwebp
-cd libwebpjs
-```
+## Background
+When support for [WhatsApp Stickers](https://faq.whatsapp.com/general/how-to-create-stickers-for-whatsapp) was first released in 2018, I was obssessed with transforming my Telegram stickers to WhatsApp onstickerses. 
 
-Build and move output files to public
-```
-emcc -O3 \
- -s WASM=1 \
- -s EXTRA_EXPORTED_RUNTIME_METHODS='["cwrap"]' \
- -s ALLOW_MEMORY_GROWTH=1 \
- -s "BINARYEN_TRAP_MODE='clamp'" \
- -s MODULARIZE=1 \
- -s 'EXPORT_NAME="libwebp"' \
- -I libwebp \
- -o libwebpjs.out.js \
- webp.c \
- libwebp/src/{dec,dsp,demux,enc,mux,utils}/*.c
- 
-mv *.out.* ../public
+Initially, I wrote a simple bash script that transforms stickers into the required webp format. The script was not not user friendly to end users at all so I decided to write a web based converter instead.
+
+The converter was alright, but I didn't stop there. I joined a team of developers to develop a WhatsApp Stickers sharing platform [Sticker.ooo](https://github.com/hkaden/Sticker.ooo). The project failed because of intense competitions, and our intitial prototype wasn't developed fast enough to capture the market share. Nonetheless, it had been one hell of a ride.
+
+This project was developed in haste - mind the code quality :rofl:
+
+## How to use?
+The webpage should be pretty much self-explanatory. The exported json file can be imported into WhatsApp using [WTStick](https://apps.apple.com/hk/app/wstick/id1442273161). Before WTStick (which I have no affilation to) was released, we used a custom built iOS app to import the json files.
+
+## To run locally
+You need Docker installed to build the binary for libwebp.
+```sh
+cd libwebpjs && chmod u+x build.sh && ./build.sh && cd ..
+npm start
 ```
 
-##
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Why libwebp?
+I went through the troubles of figuring out the correct build for libwebp because only Chrome had native support on webp images (Safari had no support).
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+I ended up using emscripten to compile the library into a .wasm file so that the converter can be run by all major browsers on desktop and mobile. Before that, I had no idea I could run C++ code on browsers!
