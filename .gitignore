@@ -1,8 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 /.idea
-/libwebpjs/libwebp
-/libwebpjs/*.out.*
+libwebpjs.out.*
 
 # dependencies
 /node_modules
