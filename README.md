@@ -2,7 +2,7 @@
 https://jasonlaw-dev.github.io/whatsapp-stickers-converter/
 
 ## Background
-When support for [WhatsApp Stickers](https://faq.whatsapp.com/general/how-to-create-stickers-for-whatsapp) was first released in 2018, I was obssessed with transforming my Telegram stickers to WhatsApp onstickerses. 
+When support for [WhatsApp Stickers](https://faq.whatsapp.com/general/how-to-create-stickers-for-whatsapp) was first released in 2018, I was obssessed with transforming my Telegram stickers to WhatsApp stickers. 
 
 Initially, I wrote a simple bash script that transforms stickers into the required webp format. The script was not not user friendly to end users at all so I decided to write a web based converter instead.
 
